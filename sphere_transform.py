@@ -63,15 +63,20 @@ errors = []
 for it in range(iteration_count):
 	apply_transformation( params, opt )
 	image = mi.render(scene, params, spp=4) # render a rough sketch
+	mi.util.write_bitmap("render1out.png", image) # view the output after each iteration
 	loss = mse(image) # calc loss by mean square error
 	dr.backward(loss) # magic inverse rendering
 	opt.step() # gradient step
 
 	print(f"Iteration {it:02d}: ", loss)
 	errors.append(loss)
+	if len( errors ) >= 2 and abs( errors[-1][0] - errors[-2][0] ) < 1e-7:
+		print( f"Converged after {len(errors)} iterations due to tiny change in loss value." )
+		break
 print('\nOptimization complete.')
 
 image_final = mi.render(scene, spp=512)
+mi.util.write_bitmap("render1out.png", image_final)
 imshow( mi.util.convert_to_bitmap(image_final) )
 
 plt.plot(errors)
